@@ -1,0 +1,16 @@
+{
+  "name": "YouTube Remove Comments",
+  "description": "This Firefox OS add-on removes comments in YouTube",
+  "type": "privileged",
+  "role": "addon",
+  "developer": {
+    "name": "The Gaia Team",
+    "url": "https://github.com/mozilla-b2g/gaia"
+  },
+  "customizations": [
+    {
+      "filter": "\\.youtube\\.com/",
+      "css": ["/style.css"]
+    }
+  ]
+}
