@@ -1,6 +1,0 @@
-#!/bin/sh
-
-build() {
-  mkdir -f build_temp
-  zip -0 build_temp/application.zip $FILES
-}
