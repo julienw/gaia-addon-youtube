@@ -31,6 +31,7 @@ my $name = $manifest->{name};
 
 my $code = find_app_code($name) // install_app();
 update_app($code);
+rehash_manifest();
 
 sub read_manifest {
   my $manifest_file = "manifest.webapp";
@@ -130,3 +131,14 @@ sub install_app {
   return $code;
 }
 
+sub rehash_manifest {
+  open(my $adb, "|adb shell");
+  print $adb q{
+    stop b2g
+    cd /data/b2g/mozilla/*.default/
+    echo 'user_pref("gecko.buildID", "1");' >> prefs.js
+    start b2g
+    exit
+  };
+  close $adb;
+}
