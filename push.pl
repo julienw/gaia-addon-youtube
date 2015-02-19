@@ -20,6 +20,7 @@ my $webapps_json_location = "/data/local/webapps/webapps.json";
 system('adb wait-for-device');
 system('adb root');
 system('adb remount');
+adb_stop_b2g();
 
 my $webapps_json = `adb shell cat $webapps_json_location`;
 my $webapps = $json->decode($webapps_json);
@@ -32,6 +33,7 @@ my $name = $manifest->{name};
 my $code = find_app_code($name) // install_app();
 update_app($code);
 rehash_manifest();
+adb_start_b2g();
 
 sub read_manifest {
   my $manifest_file = "manifest.webapp";
@@ -65,8 +67,10 @@ sub update_app {
 
   system("adb push manifest.webapp $location/manifest.webapp");
   system("adb push $archive $location/application.zip");
-  system("adb shell chmod 755 $webapps_system_location $location");
-  system("adb shell chmod 644 $location/manifest.webapp $location/application.zip");
+  adb_shell(qq{
+    chmod 755 $webapps_system_location $location
+    chmod 644 $location/manifest.webapp $location/application.zip
+  });
 
   unlink($archive);
 }
@@ -125,20 +129,33 @@ sub install_app {
   my ($fh, $fname) = tempfile();
   print $fh $webapps_json;
   $fh->close();
-  system('adb shell push $fname $webapps_json_location');
+
+  #system('adb push $fname $webapps_json_location');
   unlink($fname);
 
   return $code;
 }
 
-sub rehash_manifest {
+sub adb_shell {
+  my $commands = shift;
+
   open(my $adb, "|adb shell");
-  print $adb q{
-    stop b2g
+  print $adb $commands;
+  print $adb "exit\n";
+  close $adb;
+}
+
+sub rehash_manifest {
+  adb_shell(q{
     cd /data/b2g/mozilla/*.default/
     echo 'user_pref("gecko.buildID", "1");' >> prefs.js
-    start b2g
-    exit
-  };
-  close $adb;
+  });
+}
+
+sub adb_stop_b2g {
+  system("adb shell stop b2g");
+}
+
+sub adb_start_b2g {
+  system("adb shell start b2g");
 }
