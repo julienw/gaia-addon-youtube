@@ -103,7 +103,7 @@ sub find_next_local_id {
 }
 
 sub install_app {
-  var $code = create_uuid();
+  my $code = create_uuid_as_string();
   my $location = "$webapps_system_location/$code";
 
   system("adb shell mkdir $location");
@@ -130,7 +130,7 @@ sub install_app {
   print $fh $webapps_json;
   $fh->close();
 
-  #system('adb push $fname $webapps_json_location');
+  system("adb push $fname $webapps_json_location");
   unlink($fname);
 
   return $code;
